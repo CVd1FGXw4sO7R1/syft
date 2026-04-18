@@ -1,46 +1,76 @@
-OWNER = anchore
-PROJECT = syft
+# Makefile for syft - Fork of anchore/syft
 
-TOOL_DIR = .tool
-BINNY = $(TOOL_DIR)/binny
-TASK = $(TOOL_DIR)/task
+BINARY := syft
+GO := go
+GOFLAGS :=
+BUILD_DIR := ./dist
+CMD_DIR := ./cmd/syft
 
-.DEFAULT_GOAL := make-default
+# Version information
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-## Bootstrapping targets #################################
+LD_FLAGS := -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.buildDate=$(BUILD_DATE)"
 
-# note: we need to assume that binny and task have not already been installed
-$(BINNY):
-	@mkdir -p $(TOOL_DIR)
-	@curl -sSfL https://get.anchore.io/binny | sh -s -- -b $(TOOL_DIR)
+.DEFAULT_GOAL := build
 
-# note: we need to assume that binny and task have not already been installed
-.PHONY: task
-$(TASK) task: $(BINNY)
-	@$(BINNY) install task -q
+.PHONY: all
+all: clean lint test build
 
-.PHONY: ci-bootstrap-go
-ci-bootstrap-go:
-	go mod download
+.PHONY: build
+build: ## Build the binary
+	$(GO) build $(GOFLAGS) $(LD_FLAGS) -o $(BUILD_DIR)/$(BINARY) $(CMD_DIR)
 
-# this is a bootstrapping catch-all, where if the target doesn't exist, we'll ensure the tools are installed and then try again
-%:
-	@make --silent $(TASK)
-	@$(TASK) $@
+.PHONY: run
+run: ## Run the application
+	$(GO) run $(CMD_DIR)/main.go
 
-## Shim targets #################################
+.PHONY: test
+test: ## Run unit tests
+	$(GO) test $(GOFLAGS) ./... -v -race -timeout 300s
 
-.PHONY: make-default
-make-default: $(TASK)
-	@# run the default task in the taskfile
-	@$(TASK)
+.PHONY: test-unit
+test-unit: ## Run unit tests only
+	$(GO) test $(GOFLAGS) ./... -v -race -timeout 120s -short
 
-# for those of us that can't seem to kick the habit of typing `make ...` lets wrap the superior `task` tool
-TASKS := $(shell bash -c "test -f $(TASK) && NO_COLOR=1 $(TASK) -l | grep '^\* ' | cut -d' ' -f2 | tr -d ':' | tr '\n' ' '" ) $(shell bash -c "test -f $(TASK) && NO_COLOR=1 $(TASK) -l | grep 'aliases:' | cut -d ':' -f 3 | tr '\n' ' ' | tr -d ','")
+.PHONY: test-integration
+test-integration: ## Run integration tests
+	$(GO) test $(GOFLAGS) ./... -v -race -timeout 300s -run Integration
 
-.PHONY: $(TASKS)
-$(TASKS): $(TASK)
-	@$(TASK) $@
+.PHONY: lint
+lint: ## Run linters
+	$(GO) vet ./...
+	which golangci-lint && golangci-lint run ./... || echo "golangci-lint not found, skipping"
 
-help: $(TASK)
-	@$(TASK) -l
+.PHONY: fmt
+fmt: ## Format code
+	$(GO) fmt ./...
+
+.PHONY: tidy
+tidy: ## Tidy go modules
+	$(GO) mod tidy
+
+.PHONY: clean
+clean: ## Remove build artifacts
+	rm -rf $(BUILD_DIR)
+
+.PHONY: install
+install: build ## Install the binary to GOPATH/bin
+	cp $(BUILD_DIR)/$(BINARY) $(GOPATH)/bin/$(BINARY)
+
+.PHONY: snapshot
+snapshot: ## Build a snapshot release with goreleaser
+	goreleaser release --snapshot --clean --skip-publish
+
+.PHONY: release
+release: ## Build and publish a release with goreleaser
+	goreleaser release --clean
+
+.PHONY: bootstrap
+bootstrap: ## Install required tools
+	$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+.PHONY: help
+help: ## Display this help message
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
