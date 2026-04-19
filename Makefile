@@ -13,7 +13,7 @@ BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 LD_FLAGS := -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.buildDate=$(BUILD_DATE)"
 
-.DEFAULT_GOAL := build
+.DEFAULT_GOAL := dev
 
 .PHONY: all
 all: clean lint test build
