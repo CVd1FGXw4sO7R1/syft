@@ -78,9 +78,10 @@ dev: ## Fast build for local development (no tests)
 	@echo "Built $(BUILD_DIR)/$(BINARY) ($(VERSION))"
 
 # Personal shortcut: run tests without -v for cleaner output during development
+# Using -count=1 to disable test caching so results are always fresh
 .PHONY: test-quiet
 test-quiet: ## Run unit tests with minimal output
-	$(GO) test $(GOFLAGS) ./... -race -timeout 120s -short
+	$(GO) test $(GOFLAGS) ./... -race -timeout 120s -short -count=1
 
 .PHONY: help
 help: ## Display this help message
