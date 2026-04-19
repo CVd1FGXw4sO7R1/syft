@@ -71,6 +71,12 @@ release: ## Build and publish a release with goreleaser
 bootstrap: ## Install required tools
 	$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
+# Quick dev target: build without race detector for faster iteration
+.PHONY: dev
+dev: ## Fast build for local development (no tests)
+	$(GO) build $(GOFLAGS) $(LD_FLAGS) -o $(BUILD_DIR)/$(BINARY) $(CMD_DIR)
+	@echo "Built $(BUILD_DIR)/$(BINARY) ($(VERSION))"
+
 .PHONY: help
 help: ## Display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
