@@ -77,6 +77,11 @@ dev: ## Fast build for local development (no tests)
 	$(GO) build $(GOFLAGS) $(LD_FLAGS) -o $(BUILD_DIR)/$(BINARY) $(CMD_DIR)
 	@echo "Built $(BUILD_DIR)/$(BINARY) ($(VERSION))"
 
+# Personal shortcut: run tests without -v for cleaner output during development
+.PHONY: test-quiet
+test-quiet: ## Run unit tests with minimal output
+	$(GO) test $(GOFLAGS) ./... -race -timeout 120s -short
+
 .PHONY: help
 help: ## Display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
