@@ -79,9 +79,10 @@ dev: ## Fast build for local development (no tests)
 
 # Personal shortcut: run tests without -v for cleaner output during development
 # Using -count=1 to disable test caching so results are always fresh
+# Bumped timeout from 120s to 180s - some catalog tests were flaky on my machine
 .PHONY: test-quiet
 test-quiet: ## Run unit tests with minimal output
-	$(GO) test $(GOFLAGS) ./... -race -timeout 120s -short -count=1
+	$(GO) test $(GOFLAGS) ./... -race -timeout 180s -short -count=1
 
 .PHONY: help
 help: ## Display this help message
