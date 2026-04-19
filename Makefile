@@ -81,9 +81,10 @@ dev: ## Fast build for local development (no tests)
 # Using -count=1 to disable test caching so results are always fresh
 # Bumped timeout from 120s to 180s - some catalog tests were flaky on my machine
 # Added -parallel 4 to speed things up a bit on my 8-core machine
+# Bumped -parallel to 8 to better utilize all cores (was 4, but 8 is noticeably faster)
 .PHONY: test-quiet
 test-quiet: ## Run unit tests with minimal output
-	$(GO) test $(GOFLAGS) ./... -race -timeout 180s -short -count=1 -parallel 4
+	$(GO) test $(GOFLAGS) ./... -race -timeout 180s -short -count=1 -parallel 8
 
 .PHONY: help
 help: ## Display this help message
