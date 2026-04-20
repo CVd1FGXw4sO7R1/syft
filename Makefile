@@ -95,9 +95,6 @@ prep: fmt tidy build ## Format, tidy modules, and build
 # Watch target: rebuild on file changes using entr (install via: brew install entr)
 # Usage: make watch
 .PHONY: watch
-watch: ## Rebuild on source file changes (requires entr)
-	find . -name '*.go' | entr -r make dev
-
-.PHONY: help
-help: ## Display this help message
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | s
+watch: ## Rebuild on file changes (requires entr: brew install entr)
+	# Using -d flag so entr exits when new files are added (re-run make watch to pick them up)
+	find . -name '*.go' | entr -d make dev
