@@ -87,6 +87,11 @@ dev: ## Fast build for local development (no tests)
 test-quiet: ## Run unit tests with minimal output
 	$(GO) test $(GOFLAGS) ./... -race -timeout 180s -short -count=1 -parallel 8
 
+# Convenience target: fmt + tidy + build in one shot - I run this before committing
+.PHONY: prep
+prep: fmt tidy build ## Format, tidy modules, and build
+	@echo "Ready to commit."
+
 .PHONY: help
 help: ## Display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
