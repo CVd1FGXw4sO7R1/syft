@@ -94,7 +94,7 @@ prep: fmt tidy build ## Format, tidy modules, and build
 
 # Watch target: rebuild on file changes using entr (install via: brew install entr)
 # Usage: make watch
-# Note: entr exits with code 130 on Ctrl-C, which is expected - ignore the error
+# Example: find . -name '*.go' | entr -r make dev
 .PHONY: watch
-watch: ## Watch for file changes and rebuild (requires entr)
-	find . -name '*.go' | entr -r $(MAKE) dev
+watch: ## Rebuild on Go file changes (requires entr: brew install entr)
+	find . -name '*.go' | entr -r make dev
