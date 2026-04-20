@@ -83,9 +83,10 @@ dev: ## Fast build for local development (no tests)
 # Added -parallel 4 to speed things up a bit on my 8-core machine
 # Bumped -parallel to 8 to better utilize all cores (was 4, but 8 is noticeably faster)
 # Note: on battery power I drop -parallel back to 4 manually to avoid fan noise
+# Bumped timeout to 240s after noticing occasional timeouts on larger repos with many deps
 .PHONY: test-quiet
 test-quiet: ## Run unit tests with minimal output
-	$(GO) test $(GOFLAGS) ./... -race -timeout 180s -short -count=1 -parallel 8
+	$(GO) test $(GOFLAGS) ./... -race -timeout 240s -short -count=1 -parallel 8
 
 # Convenience target: fmt + tidy + build in one shot - I run this before committing
 .PHONY: prep
@@ -94,7 +95,3 @@ prep: fmt tidy build ## Format, tidy modules, and build
 
 # Watch target: rebuild on file changes using entr (install via: brew install entr)
 # Usage: make watch
-# Example: find . -name '*.go' | entr -r make dev
-.PHONY: watch
-watch: ## Rebuild on Go file changes (requires entr: brew install entr)
-	find . -name '*.go' | entr -r make dev
