@@ -92,6 +92,12 @@ test-quiet: ## Run unit tests with minimal output
 prep: fmt tidy build ## Format, tidy modules, and build
 	@echo "Ready to commit."
 
+# Watch target: rebuild on file changes using entr (install via: brew install entr)
+# Usage: make watch
+.PHONY: watch
+watch: ## Rebuild on source file changes (requires entr)
+	find . -name '*.go' | entr -r make dev
+
 .PHONY: help
 help: ## Display this help message
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | s
